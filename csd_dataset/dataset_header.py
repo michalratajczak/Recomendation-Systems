@@ -1,0 +1,26 @@
+columns = \
+    [
+        'sale',
+        'sales_amount_in_euro',
+        'time_delay_for_conversion',
+        'click_timestamp',
+        'nb_clicks_1week',
+        'product_price',
+        'product_age_group',
+        'device_type',
+        'audience_id',
+        'product_gender',
+        'product_brand',
+        'product_category_1',
+        'product_category_2',
+        'product_category_3',
+        'product_category_4',
+        'product_category_5',
+        'product_category_6',
+        'product_category_7',
+        'product_country',
+        'product_id',
+        'product_title',
+        'partner_id',
+        'user_id'
+    ]
