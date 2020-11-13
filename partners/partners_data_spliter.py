@@ -14,6 +14,7 @@ def split_data(dataset, partners, column_names):
         counter+=1
     logger.log_total_time()
 
+
 def save_partners_list(partners):
     with open('partners_list.py', "w") as f:
         f.write('partners = \\\n[\n')
@@ -21,6 +22,7 @@ def save_partners_list(partners):
             f.write(f'  \'{partner}\',\n')
         f.write(f'  \'{partner}\'\n')
         f.write("]")
+
 
 if __name__ == "__main__":
     logger = helpers.console_logger.console_logger("Reading data")
