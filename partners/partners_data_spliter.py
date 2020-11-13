@@ -7,6 +7,8 @@ import helpers.console_logger
 def split_data(dataset, partners, column_names):
     logger = helpers.console_logger.console_logger("Splitting dataset")
     counter = 1
+    if not os.path.exists('data'):
+        os.makedirs('data')
     for partner in partners:
         logger.run_execution_timer()
         dataset.loc[dataset['partner_id'] == partner].to_csv(os.path.join('data', partner), sep='\t', columns=column_names)
