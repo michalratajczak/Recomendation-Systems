@@ -131,4 +131,5 @@ dmypy.json
 
 # other
 csd_dataset/CriteoSearchData
-partners/data/
+partners/data/*
+results/*
