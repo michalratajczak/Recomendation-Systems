@@ -1,14 +1,12 @@
 import os
 import random
-import config
+import app_config
 import datetime
 import typing
 import json
+import simulator.simulation_config
 
 #region models
-from partners.partners_list import partners
-
-
 class simulation_result_model:
     clicks_savings: float
     sale_losses: float
@@ -42,8 +40,6 @@ class partner_simulation_results_model:
 
     def to_dict(self):
         return [result.to_dict() for result in self.results]
-
-
 
 
 class reoriented_partner_simulation_results_model:
@@ -155,26 +151,25 @@ def generate_results_report(partner_results: typing.List[partner_simulation_resu
 
 
 def save_results_report(report: dict, simulation_config: dict):
-    if not os.path.exists(os.path.join(config.config['root_dir'], 'results')):
-        os.makedirs(os.path.join(config.config['root_dir'], 'results'))
+    if not os.path.exists(app_config.app_config['results_dir']):
+        os.makedirs(app_config.app_config['results_dir'])
 
     name = datetime.datetime.now().strftime("%d%m%y_%H%M%S")
-    if not os.path.exists(os.path.join(config.config['root_dir'], 'results', name)):
-        os.makedirs(os.path.join(config.config['root_dir'], 'results', name))
-        with open(os.path.join(config.config['root_dir'], 'results', name, 'results.txt'), 'w') as f:
+    if not os.path.exists(os.path.join(app_config.app_config['results_dir'], name)):
+        os.makedirs(os.path.join(app_config.app_config['results_dir'], name))
+        with open(os.path.join(app_config.app_config['results_dir'], name, 'results.txt'), 'w') as f:
             f.write(json.dumps(report, indent=4))
-        with open(os.path.join(config.config['root_dir'], 'results', name, 'config.txt'), 'w') as f:
+        with open(os.path.join(app_config.app_config['results_dir'], name, 'config.txt'), 'w') as f:
             f.write(json.dumps(simulation_config, indent=4))
 #endregion
 
 
 #region example results report generator
-def _example_result_report_generator():
-    partners_ids = partners.partners_list.partners[:3]
+def _example_result_report_generator(config: simulator.simulation_config.simulation_config):
     partners_results: typing.List[partner_simulation_results_model] = []
-    for partner_id in partners_ids:
+    for partner_id in config.partners_to_involve_in_simulation:
         partner_result = partner_simulation_results_model(partner_id)
-        for x in range(5):
+        for x in range(config.number_of_simulation_steps):
             result = simulation_result_model()
             result.clicks_savings = random.random()
             result.sale_losses = random.random()
@@ -184,8 +179,11 @@ def _example_result_report_generator():
         partners_results.append(partner_result)
 
     report = generate_results_report(partners_results)
-    save_results_report(report, report)
+    save_results_report(report, config.to_dict())
+
 
 if __name__ == "__main__":
-    _example_result_report_generator()
+    config = simulator.simulation_config.simulation_config(['C0F515F0A2D0A5D9F854008BA76EB537'],
+                                                           10, 0.1, 3.1, 12, 0.12)
+    _example_result_report_generator(config)
 #endregion
