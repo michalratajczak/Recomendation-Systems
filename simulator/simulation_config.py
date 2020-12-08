@@ -32,3 +32,13 @@ class simulation_config:
                 'pseudorandom_seed': self.pseudorandom_seed,
                 'click_cost_ratio': self.click_cost_ratio
             }
+
+def from_dict(dictionary: dict):
+    config = simulation_config(
+        dictionary["partners_to_involve_in_simulation"],
+        dictionary["number_of_simulation_steps"],
+        dictionary["NPM"],
+        dictionary["how_many_ratio"],
+        dictionary["pseudorandom_seed"],
+        dictionary["click_cost_ratio"])
+    return config

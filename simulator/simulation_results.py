@@ -90,7 +90,7 @@ class aggregated_all_partners_simulation_results_model:
 
 
 #region functions
-def _reorient_partner_simulation_results(results: partner_simulation_results_model):
+def __reorient_partner_simulation_results(results: partner_simulation_results_model):
     reoriented_results = reoriented_partner_simulation_results_model(results.partner_id)
     for result in results.results:
         reoriented_results.clicks_savings.append(result.clicks_savings)
@@ -100,7 +100,7 @@ def _reorient_partner_simulation_results(results: partner_simulation_results_mod
     return reoriented_results
 
 
-def _aggregate_partner_simulation_results(results: reoriented_partner_simulation_results_model):
+def __aggregate_partner_simulation_results(results: reoriented_partner_simulation_results_model):
     aggregated_results = aggregated_partner_simulation_results_model(results.partner_id)
     aggregated_results.clicks_savings = sum(results.clicks_savings)
     aggregated_results.sale_losses = sum(results.sale_losses)
@@ -109,7 +109,7 @@ def _aggregate_partner_simulation_results(results: reoriented_partner_simulation
     return aggregated_results
 
 
-def _aggregate_all_partners_simulation_results(results: typing.List[aggregated_partner_simulation_results_model]):
+def __aggregate_all_partners_simulation_results(results: typing.List[aggregated_partner_simulation_results_model]):
     aggregated_results = aggregated_all_partners_simulation_results_model()
     for partner_results in results:
         aggregated_results.clicks_savings.append(partner_results.clicks_savings)
@@ -119,7 +119,7 @@ def _aggregate_all_partners_simulation_results(results: typing.List[aggregated_p
     return aggregated_results
 
 
-def _sum_all_partners_simulation_results(results: aggregated_all_partners_simulation_results_model):
+def __sum_all_partners_simulation_results(results: aggregated_all_partners_simulation_results_model):
     summed_results = simulation_result_model()
     summed_results.clicks_savings = sum(results.clicks_savings)
     summed_results.sale_losses = sum(results.sale_losses)
@@ -136,17 +136,17 @@ def generate_results_report(partner_results: typing.List[partner_simulation_resu
     aggregated_partner_results_list = []
 
     for partner in partner_results:
-        reoriented_results = _reorient_partner_simulation_results(partner)
-        aggregated_partner_result = _aggregate_partner_simulation_results(reoriented_results)
+        reoriented_results = __reorient_partner_simulation_results(partner)
+        aggregated_partner_result = __aggregate_partner_simulation_results(reoriented_results)
         aggregated_partner_results_list.append(aggregated_partner_result)
 
         report['for_individual_partners'][partner.partner_id] = partner.to_dict()
         report['reoriented_for_each_partner'][partner.partner_id] = reoriented_results.to_dict()
         report['aggregated_for_each_partner'][partner.partner_id] = aggregated_partner_result.to_dict()
 
-    aggregated_all_partners_results = _aggregate_all_partners_simulation_results(aggregated_partner_results_list)
+    aggregated_all_partners_results = __aggregate_all_partners_simulation_results(aggregated_partner_results_list)
     report['aggregated_for_all_partners'] = aggregated_all_partners_results.to_dict()
-    report['summed_for_all_partners'] = _sum_all_partners_simulation_results(aggregated_all_partners_results).to_dict()
+    report['summed_for_all_partners'] = __sum_all_partners_simulation_results(aggregated_all_partners_results).to_dict()
     return report
 
 
@@ -157,9 +157,9 @@ def save_results_report(report: dict, simulation_config: dict):
     name = datetime.datetime.now().strftime("%d%m%y_%H%M%S")
     if not os.path.exists(os.path.join(app_config.app_config['results_dir'], name)):
         os.makedirs(os.path.join(app_config.app_config['results_dir'], name))
-        with open(os.path.join(app_config.app_config['results_dir'], name, 'results.txt'), 'w') as f:
+        with open(os.path.join(app_config.app_config['results_dir'], name, 'results.json'), 'w') as f:
             f.write(json.dumps(report, indent=4))
-        with open(os.path.join(app_config.app_config['results_dir'], name, 'config.txt'), 'w') as f:
+        with open(os.path.join(app_config.app_config['results_dir'], name, 'config.json'), 'w') as f:
             f.write(json.dumps(simulation_config, indent=4))
 #endregion
 
@@ -183,7 +183,10 @@ def _example_result_report_generator(config: simulator.simulation_config.simulat
 
 
 if __name__ == "__main__":
-    config = simulator.simulation_config.simulation_config(['C0F515F0A2D0A5D9F854008BA76EB537'],
-                                                           10, 0.1, 3.1, 12, 0.12)
+    config = simulator.simulation_config.simulation_config(['C0F515F0A2D0A5D9F854008BA76EB537',
+                                                            'BD01BAFAE73CF38C403978BBB458300C',
+                                                            'C4D189327BD87FEB3BF896DA716C6995',
+                                                            '440255DF62CFD36FBC0206828FC488E0'],
+                                                            10, 0.1, 3.1, 12, 0.12)
     _example_result_report_generator(config)
 #endregion
