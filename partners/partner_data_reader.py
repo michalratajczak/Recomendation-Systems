@@ -6,33 +6,38 @@ import csd_dataset.dataset_header
 import datetime
 
 class partner_data_reader:
-    _columns: typing.List[str]
-    _first_day_date: datetime
-    _actual_day_date: datetime
+    __columns: typing.List[str]
+    __first_day_date: datetime
+    __actual_day_date: datetime
 
     partner_id: str
 
 
     def __init__(self, partner_id):
         self.partner_id = partner_id
-        self._columns = csd_dataset.dataset_header.columns
+        self.__columns = csd_dataset.dataset_header.columns
         self.data = pandas.read_csv(os.path.join(app_config.app_config['split_partners_data_dir'], partner_id),
-                                    sep='\t', header=0, skiprows=1, names=self._columns,
+                                    sep='\t', header=0, skiprows=1, names=self.__columns,
                                     low_memory=False)
         self.data['click_timestamp'] = [datetime.datetime.fromtimestamp(x).replace(hour=0, minute=0, second=0, microsecond=0)
                                         for x in self.data['click_timestamp']]
-        self._first_day_date = self.data['click_timestamp'].min()
-        self._actual_day_date = self._first_day_date
+        self.__first_day_date = self.data['click_timestamp'].min()
+        self.__actual_day_date = self.__first_day_date
 
 
-    def _next_day_date(self):
-        return self._actual_day_date + datetime.timedelta(days=1)
+    def get_actual_date(self):
+        return self.__actual_day_date
 
 
     def next_day(self):
-        actual_day_data = self.data.loc[(self.data['click_timestamp'] == self._next_day_date())]
-        self._actual_day_date += datetime.timedelta(days=1)
+        actual_day_data = self.data.loc[(self.data['click_timestamp'] == self.__actual_day_date)]
+        self.__actual_day_date += datetime.timedelta(days=1)
         return actual_day_data
+
+
+    def get_actual_day_product_list(self):
+        actual_day_data = self.data.loc[(self.data['click_timestamp'] == self.__actual_day_date)]
+        return actual_day_data['product_id'].unique()
 
 
     def get_day_data(self, date: datetime):

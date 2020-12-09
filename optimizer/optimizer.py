@@ -10,22 +10,21 @@ class optimizer:
         self.config = config
         self.products = []
 
-    def next_day(self):
-        pass
 
-    def get_products_seen_today(self):
-        pass
+    def get_excluded_products(self, daily_products: typing.List[str]):
+        for product in daily_products:
+            if product not in self.products:
+                self.products.append(product)
 
-    def get_excluded_products(self):
         return self.__get_excluded_products_pseudorandomly()
 
     def __get_excluded_products_pseudorandomly(self):
-        dummy_list_of_potentially_excluded_products = self.products
+        potentially_excluded_products = self.products
+        potentially_excluded_products = list(potentially_excluded_products)
+        potentially_excluded_products.sort()
 
-        dummy_list_of_potentially_excluded_products = list(dummy_list_of_potentially_excluded_products)
-        dummy_list_of_potentially_excluded_products.sort()
-        dummy_how_many_products = round(len(dummy_list_of_potentially_excluded_products) / self.config.how_many_ratio)
-
+        number_of_products_to_exclude = round(len(potentially_excluded_products) / self.config.how_many_ratio)
         random.seed(self.config.pseudorandom_seed)
-        excluded_products = random.sample(dummy_list_of_potentially_excluded_products, dummy_how_many_products)
+
+        excluded_products = random.sample(potentially_excluded_products, number_of_products_to_exclude)
         return excluded_products

@@ -1,8 +1,6 @@
 import json
 import partners.partner_data_reader
-import pandas
 import partners.partners_list
-import typing
 import helpers.console_logger
 import os
 import app_config
@@ -32,7 +30,7 @@ class partner_data_profiler:
             }
 
 
-def _process_all_partners():
+def process_all_partners():
     logger = helpers.console_logger.console_logger("Creating profiles")
     logger.log("Starting operation...")
     counter = 1
@@ -53,4 +51,4 @@ def _process_all_partners():
 
 
 if __name__ == "__main__":
-    _process_all_partners()
+    process_all_partners()

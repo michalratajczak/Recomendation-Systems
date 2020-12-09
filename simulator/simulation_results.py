@@ -150,7 +150,7 @@ def generate_results_report(partner_results: typing.List[partner_simulation_resu
     return report
 
 
-def save_results_report(report: dict, simulation_config: dict):
+def save_results_report(report: dict, simulation_config: dict, exclusion_history: dict = None):
     if not os.path.exists(app_config.app_config['results_dir']):
         os.makedirs(app_config.app_config['results_dir'])
 
@@ -161,11 +161,15 @@ def save_results_report(report: dict, simulation_config: dict):
             f.write(json.dumps(report, indent=4))
         with open(os.path.join(app_config.app_config['results_dir'], name, 'config.json'), 'w') as f:
             f.write(json.dumps(simulation_config, indent=4))
+        if exclusion_history is not None:
+            with open(os.path.join(app_config.app_config['results_dir'], name, 'products_exclusion_history.json'), 'w') as f:
+                f.write(json.dumps(exclusion_history, indent=4))
+
 #endregion
 
 
 #region example results report generator
-def _example_result_report_generator(config: simulator.simulation_config.simulation_config):
+def example_result_report_generator(config: simulator.simulation_config.simulation_config):
     partners_results: typing.List[partner_simulation_results_model] = []
     for partner_id in config.partners_to_involve_in_simulation:
         partner_result = partner_simulation_results_model(partner_id)
@@ -188,5 +192,5 @@ if __name__ == "__main__":
                                                             'C4D189327BD87FEB3BF896DA716C6995',
                                                             '440255DF62CFD36FBC0206828FC488E0'],
                                                             10, 0.1, 3.1, 12, 0.12)
-    _example_result_report_generator(config)
+    example_result_report_generator(config)
 #endregion
