@@ -34,7 +34,5 @@ class simulator_core:
         report = simulator.simulation_results.generate_results_report(results)
         simulator.simulation_results.save_results_report(report,
                                                          self.config.to_dict(),
-                                                         exclusion_history=partners_product_exclusion_history)
-
-        simulator.simulation_results_visualization.render_profit_gain_chart(report, self.config.partners_to_involve_in_simulation[0])
-        simulator.simulation_results_visualization.render_accumulated_profit_gain_chart(report, self.config.partners_to_involve_in_simulation[0])
+                                                         exclusion_history=partners_product_exclusion_history,
+                                                         render_charts=True)

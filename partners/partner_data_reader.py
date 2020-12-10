@@ -11,13 +11,14 @@ class partner_data_reader:
     __actual_day_date: datetime
 
     partner_id: str
+    counter: int
 
 
     def __init__(self, partner_id):
         self.partner_id = partner_id
         self.__columns = csd_dataset.dataset_header.columns
         self.data = pandas.read_csv(os.path.join(app_config.app_config['split_partners_data_dir'], partner_id),
-                                    sep='\t', header=0, skiprows=1, names=self.__columns,
+                                    sep='\t', header=0, skiprows=0, names=self.__columns,
                                     low_memory=False)
         self.data['click_timestamp'] = [datetime.datetime.fromtimestamp(x).replace(hour=0, minute=0, second=0, microsecond=0)
                                         for x in self.data['click_timestamp']]
@@ -29,15 +30,16 @@ class partner_data_reader:
         return self.__actual_day_date
 
 
+    def get_actual_day_data(self):
+        return self.data.loc[(self.data['click_timestamp'] == self.__actual_day_date)]
+
+
     def next_day(self):
-        actual_day_data = self.data.loc[(self.data['click_timestamp'] == self.__actual_day_date)]
         self.__actual_day_date += datetime.timedelta(days=1)
-        return actual_day_data
 
 
     def get_actual_day_product_list(self):
-        actual_day_data = self.data.loc[(self.data['click_timestamp'] == self.__actual_day_date)]
-        return actual_day_data['product_id'].unique()
+        return self.get_actual_day_data()['product_id'].unique()
 
 
     def get_day_data(self, date: datetime):

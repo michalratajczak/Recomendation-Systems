@@ -5,6 +5,7 @@ import datetime
 import typing
 import json
 import simulator.simulation_config
+import simulator.simulation_results_visualization as srv
 
 #region models
 class simulation_result_model:
@@ -95,7 +96,7 @@ def __reorient_partner_simulation_results(results: partner_simulation_results_mo
     for result in results.results:
         reoriented_results.clicks_savings.append(result.clicks_savings)
         reoriented_results.sale_losses.append(result.sale_losses)
-        reoriented_results.profit_losses.append(result.sale_losses)
+        reoriented_results.profit_losses.append(result.profit_losses)
         reoriented_results.profit_gain.append(result.profit_gain)
     return reoriented_results
 
@@ -150,7 +151,7 @@ def generate_results_report(partner_results: typing.List[partner_simulation_resu
     return report
 
 
-def save_results_report(report: dict, simulation_config: dict, exclusion_history: dict = None):
+def save_results_report(report: dict, simulation_config: dict, exclusion_history: dict = None, render_charts: bool = False):
     if not os.path.exists(app_config.app_config['results_dir']):
         os.makedirs(app_config.app_config['results_dir'])
 
@@ -164,6 +165,15 @@ def save_results_report(report: dict, simulation_config: dict, exclusion_history
         if exclusion_history is not None:
             with open(os.path.join(app_config.app_config['results_dir'], name, 'products_exclusion_history.json'), 'w') as f:
                 f.write(json.dumps(exclusion_history, indent=4))
+        if render_charts is True:
+            for partner in report['for_individual_partners'].keys():
+                path = os.path.join(app_config.app_config['results_dir'], name, partner)
+                os.makedirs(path)
+                srv.render_profit_gain_chart(report, partner, os.path.join(path, 'profit_gain.png'))
+                srv.render_accumulated_profit_gain_chart(report, partner, os.path.join(path, 'accumulated_profit_gain.png'))
+                srv.render_clicks_savings_chart(report, partner, os.path.join(path, 'clicks_savings.png'))
+                srv.render_profit_losses_chart(report, partner, os.path.join(path, 'profit_losses.png'))
+                srv.render_sale_losses_chart(report, partner, os.path.join(path, 'sale_losses.png'))
 
 #endregion
 
