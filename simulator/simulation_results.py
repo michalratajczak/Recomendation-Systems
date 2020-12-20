@@ -218,7 +218,7 @@ def save_results_report(report: dict, simulation_config: dict, exclusion_history
 def notation_A_short_report(history: typing.List[products_exclusion_history]):
     report = dict()
     for day in history:
-        key = day.date.strftime('%d/%m/%y')
+        key = day.date.strftime('%d/%m/%Y')
         report[key] = dict()
         report[key]['products_to_exclude'] = day.products_to_exclude
         report[key]['products_actually_excluded'] = day.products_actually_excluded
@@ -228,7 +228,7 @@ def notation_A_short_report(history: typing.List[products_exclusion_history]):
 def notation_A_medium_report(history: typing.List[products_exclusion_history]):
     report = dict()
     for day in history:
-        key = day.date.strftime('%d/%m/%y')
+        key = day.date.strftime('%d/%m/%Y')
         report[key] = dict()
         report[key]['products_seen_so_far'] = day.products_seen_so_far
         report[key]['products_to_exclude'] = day.products_to_exclude
@@ -239,7 +239,7 @@ def notation_A_medium_report(history: typing.List[products_exclusion_history]):
 def notation_A_full_report(history: typing.List[products_exclusion_history]):
     report = dict()
     for day in history:
-        key = day.date.strftime('%d/%m/%y')
+        key = day.date.strftime('%d/%m/%Y')
         report[key] = dict()
         report[key]['products_seen_so_far'] = day.products_seen_so_far
         report[key]['products_seen_today'] = day.products_seen_today
@@ -254,7 +254,7 @@ def notation_B_short_report(history: typing.List[products_exclusion_history]):
     report['days'] = []
     for day in history:
         r = dict()
-        r['day'] = day.date.strftime('%y-%m-%d')
+        r['day'] = day.date.strftime('%Y-%m-%d')
         r['productsToExclude'] = day.products_to_exclude
         r['productsActuallyExcluded'] = day.products_actually_excluded
         report['days'].append(r)
@@ -267,7 +267,7 @@ def notation_B_medium_report(history: typing.List[products_exclusion_history]):
     report['days'] = []
     for day in history:
         r = dict()
-        r['day'] = day.date.strftime('%y-%m-%d')
+        r['day'] = day.date.strftime('%Y-%m-%d')
         r['productsSeenSoFar'] = day.products_seen_so_far
         r['productsToExclude'] = day.products_to_exclude
         r['productsActuallyExcluded'] = day.products_actually_excluded
@@ -281,7 +281,7 @@ def notation_B_full_report(history: typing.List[products_exclusion_history]):
     report['days'] = []
     for day in history:
         r = dict()
-        r['day'] = day.date.strftime('%y-%m-%d')
+        r['day'] = day.date.strftime('%Y-%m-%d')
         r['productsSeenSoFar'] = day.products_seen_so_far
         r['productsSeenToday'] = day.products_seen_today
         r['productsToExclude'] = day.products_to_exclude
