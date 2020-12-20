@@ -19,7 +19,7 @@ class partner_simulator:
     products_seen_so_far: typing.List[str]
 
     results: typing.List[simulator.simulation_results.simulation_result_model]
-    products_exclusion_history: dict
+    products_exclusion_history: typing.List[simulator.simulation_results.products_exclusion_history]
 
     def __init__(self, partner_id: str, config: simulator.simulation_config.simulation_config):
         self.partner_id = partner_id
@@ -32,7 +32,7 @@ class partner_simulator:
         self.products_to_exclude = []
         self.products_seen_so_far = []
         self.results = []
-        self.products_exclusion_history = dict()
+        self.products_exclusion_history = []
 
 
     def next_day(self):
@@ -55,10 +55,12 @@ class partner_simulator:
         result.sale_losses = self.__calculate_sale_losses(data, self.actually_excluded_products)
 
         self.results.append(result)
-        self.products_exclusion_history[today_date.strftime('%d/%m/%y')] = dict()
-        self.products_exclusion_history[today_date.strftime('%d/%m/%y')]['products_seen_so_far'] = self.products_seen_so_far
-        self.products_exclusion_history[today_date.strftime('%d/%m/%y')]['products_to_exclude'] = self.products_to_exclude
-        self.products_exclusion_history[today_date.strftime('%d/%m/%y')]['actually_excluded_products'] = self.actually_excluded_products
+        history = simulator.simulation_results.products_exclusion_history(today_date,
+                                                                          products_seen_today,
+                                                                          self.products_seen_so_far,
+                                                                          self.products_to_exclude,
+                                                                          self.actually_excluded_products)
+        self.products_exclusion_history.append(history)
         self.optimizer.update_product_list(all_todays_products)
         self.data_reader.next_day()
 
@@ -82,7 +84,7 @@ class partner_simulator:
         for product in products:
             if product not in self.products_to_exclude:
                 products_seen_today.append(product)
-
+        products_seen_today.sort()
         return products_seen_today
 
 

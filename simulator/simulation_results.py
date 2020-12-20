@@ -87,6 +87,25 @@ class aggregated_all_partners_simulation_results_model:
                 'profit_losses': self.profit_losses,
                 'profit_gain': self.profit_gain
             }
+
+
+class products_exclusion_history:
+    date: datetime
+    products_seen_today: typing.List[str]
+    products_seen_so_far: typing.List[str]
+    products_to_exclude: typing.List[str]
+    products_actually_excluded: typing.List[str]
+
+    def __init__(self, date: datetime,
+                 products_seen_today: typing.List[str],
+                 products_seen_so_far: typing.List[str],
+                 products_to_exclude: typing.List[str],
+                 products_actually_excluded: typing.List[str]):
+        self.date = date
+        self.products_seen_today = products_seen_today
+        self.products_seen_so_far = products_seen_so_far
+        self.products_to_exclude = products_to_exclude
+        self.products_actually_excluded = products_actually_excluded
 #endregion
 
 
@@ -163,17 +182,112 @@ def save_results_report(report: dict, simulation_config: dict, exclusion_history
         with open(os.path.join(app_config.app_config['results_dir'], name, 'config.json'), 'w') as f:
             f.write(json.dumps(simulation_config, indent=4))
         if exclusion_history is not None:
-            with open(os.path.join(app_config.app_config['results_dir'], name, 'products_exclusion_history.json'), 'w') as f:
-                f.write(json.dumps(exclusion_history, indent=4))
+            for partner in exclusion_history.keys():
+                path = os.path.join(app_config.app_config['results_dir'], name, partner)
+                if not os.path.exists(path):
+                    os.makedirs(path)
+                #notation A reports:
+                with open(os.path.join(path, 'notation_A_short_report.json'), 'w') as f:
+                    f.write(json.dumps(notation_A_short_report(exclusion_history[partner]), indent=4))
+                with open(os.path.join(path, 'notation_A_medium_report.json'), 'w') as f:
+                    f.write(json.dumps(notation_A_medium_report(exclusion_history[partner]), indent=4))
+                with open(os.path.join(path, 'notation_A_full_report.json'), 'w') as f:
+                    f.write(json.dumps(notation_A_full_report(exclusion_history[partner]), indent=4))
+                #notation B reports:
+                with open(os.path.join(path, 'notation_B_short_report.json'), 'w') as f:
+                    f.write(json.dumps(notation_B_short_report(exclusion_history[partner]), indent=4))
+                with open(os.path.join(path, 'notation_B_medium_report.json'), 'w') as f:
+                    f.write(json.dumps(notation_B_medium_report(exclusion_history[partner]), indent=4))
+                with open(os.path.join(path, 'notation_B_full_report.json'), 'w') as f:
+                    f.write(json.dumps(notation_B_full_report(exclusion_history[partner]), indent=4))
         if render_charts is True:
             for partner in report['for_individual_partners'].keys():
                 path = os.path.join(app_config.app_config['results_dir'], name, partner)
-                os.makedirs(path)
+                if not os.path.exists(path):
+                    os.makedirs(path)
                 srv.render_profit_gain_chart(report, partner, os.path.join(path, 'profit_gain.png'))
                 srv.render_accumulated_profit_gain_chart(report, partner, os.path.join(path, 'accumulated_profit_gain.png'))
                 srv.render_clicks_savings_chart(report, partner, os.path.join(path, 'clicks_savings.png'))
                 srv.render_profit_losses_chart(report, partner, os.path.join(path, 'profit_losses.png'))
                 srv.render_sale_losses_chart(report, partner, os.path.join(path, 'sale_losses.png'))
+
+#endregion
+
+
+#region variants of the generated report
+def notation_A_short_report(history: typing.List[products_exclusion_history]):
+    report = dict()
+    for day in history:
+        key = day.date.strftime('%d/%m/%y')
+        report[key] = dict()
+        report[key]['products_to_exclude'] = day.products_to_exclude
+        report[key]['products_actually_excluded'] = day.products_actually_excluded
+    return report
+
+
+def notation_A_medium_report(history: typing.List[products_exclusion_history]):
+    report = dict()
+    for day in history:
+        key = day.date.strftime('%d/%m/%y')
+        report[key] = dict()
+        report[key]['products_seen_so_far'] = day.products_seen_so_far
+        report[key]['products_to_exclude'] = day.products_to_exclude
+        report[key]['products_actually_excluded'] = day.products_actually_excluded
+    return report
+
+
+def notation_A_full_report(history: typing.List[products_exclusion_history]):
+    report = dict()
+    for day in history:
+        key = day.date.strftime('%d/%m/%y')
+        report[key] = dict()
+        report[key]['products_seen_so_far'] = day.products_seen_so_far
+        report[key]['products_seen_today'] = day.products_seen_today
+        report[key]['products_to_exclude'] = day.products_to_exclude
+        report[key]['products_actually_excluded'] = day.products_actually_excluded
+    return report
+
+
+def notation_B_short_report(history: typing.List[products_exclusion_history]):
+    report = dict()
+    report['strategy'] = "random"
+    report['days'] = []
+    for day in history:
+        r = dict()
+        r['day'] = day.date.strftime('%y-%m-%d')
+        r['productsToExclude'] = day.products_to_exclude
+        r['productsActuallyExcluded'] = day.products_actually_excluded
+        report['days'].append(r)
+    return report
+
+
+def notation_B_medium_report(history: typing.List[products_exclusion_history]):
+    report = dict()
+    report['strategy'] = "random"
+    report['days'] = []
+    for day in history:
+        r = dict()
+        r['day'] = day.date.strftime('%y-%m-%d')
+        r['productsSeenSoFar'] = day.products_seen_so_far
+        r['productsToExclude'] = day.products_to_exclude
+        r['productsActuallyExcluded'] = day.products_actually_excluded
+        report['days'].append(r)
+    return report
+
+
+def notation_B_full_report(history: typing.List[products_exclusion_history]):
+    report = dict()
+    report['strategy'] = "random"
+    report['days'] = []
+    for day in history:
+        r = dict()
+        r['day'] = day.date.strftime('%y-%m-%d')
+        r['productsSeenSoFar'] = day.products_seen_so_far
+        r['productsSeenToday'] = day.products_seen_today
+        r['productsToExclude'] = day.products_to_exclude
+        r['productsActuallyExcluded'] = day.products_actually_excluded
+        report['days'].append(r)
+    return report
 
 #endregion
 
