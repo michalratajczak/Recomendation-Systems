@@ -16,6 +16,7 @@ class partner_simulator:
     optimizer: optimizer.optimizer.optimizer
     products_to_exclude: typing.List[str]
     actually_excluded_products: typing.List[str]
+    products_seen_so_far: typing.List[str]
 
     results: typing.List[simulator.simulation_results.simulation_result_model]
     products_exclusion_history: dict
@@ -29,6 +30,7 @@ class partner_simulator:
                                   / self.partner_profile["total_number_of_clicks"]
         self.optimizer = optimizer.optimizer.optimizer(config)
         self.products_to_exclude = []
+        self.products_seen_so_far = []
         self.results = []
         self.products_exclusion_history = dict()
 
@@ -43,6 +45,7 @@ class partner_simulator:
         all_todays_products = self.data_reader.get_actual_day_product_list()
         products_seen_today = self.__get_products_seen_today(all_todays_products)
         self.products_to_exclude = self.optimizer.get_excluded_products()
+        self.products_seen_so_far = self.optimizer.get_product_seen_so_far_list()
         self.actually_excluded_products = self.__get_actually_excluded_products(products_seen_today)
 
         result = simulator.simulation_results.simulation_result_model()
@@ -53,10 +56,7 @@ class partner_simulator:
 
         self.results.append(result)
         self.products_exclusion_history[today_date.strftime('%d/%m/%y')] = dict()
-        self.products_exclusion_history[today_date.strftime('%d/%m/%y')]['number_of_click_made_this_day'] = len(data.index)
-        self.products_exclusion_history[today_date.strftime('%d/%m/%y')]['number_of_unique_products_seen_this_day'] = len(all_todays_products)
-        self.products_exclusion_history[today_date.strftime('%d/%m/%y')]['number_of_unique_products_seen_since_beginning_of_the_campaign'] = len(self.optimizer.get_product_list())
-        self.products_exclusion_history[today_date.strftime('%d/%m/%y')]['number_of_products_to_exclude'] = len(self.products_to_exclude)
+        self.products_exclusion_history[today_date.strftime('%d/%m/%y')]['products_seen_so_far'] = self.products_seen_so_far
         self.products_exclusion_history[today_date.strftime('%d/%m/%y')]['products_to_exclude'] = self.products_to_exclude
         self.products_exclusion_history[today_date.strftime('%d/%m/%y')]['actually_excluded_products'] = self.actually_excluded_products
         self.optimizer.update_product_list(all_todays_products)

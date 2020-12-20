@@ -20,7 +20,7 @@ class partner_data_reader:
         self.data = pandas.read_csv(os.path.join(app_config.app_config['split_partners_data_dir'], partner_id),
                                     sep='\t', header=0, skiprows=0, names=self.__columns,
                                     low_memory=False)
-        self.data['click_timestamp'] = [datetime.datetime.fromtimestamp(x).replace(hour=0, minute=0, second=0, microsecond=0)
+        self.data['click_timestamp'] = [datetime.datetime.utcfromtimestamp(x).replace(hour=0, minute=0, second=0, microsecond=0)
                                         for x in self.data['click_timestamp']]
         self.__first_day_date = self.data['click_timestamp'].min()
         self.__actual_day_date = self.__first_day_date

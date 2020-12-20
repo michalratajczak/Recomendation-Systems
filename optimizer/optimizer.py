@@ -15,6 +15,7 @@ class optimizer:
 
     def get_excluded_products(self):
         self.__exclude_products_pseudorandomly()
+        self.__excluded_products.sort()
         return self.__excluded_products
 
 
@@ -35,5 +36,7 @@ class optimizer:
                 self.__products.append(product)
 
 
-    def get_product_list(self):
-        return self.__products
+    def get_product_seen_so_far_list(self):
+        products = list(self.__products)
+        products.sort()
+        return products
