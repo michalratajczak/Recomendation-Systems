@@ -4,9 +4,9 @@ import simulator.simulation_config
 configuration = \
     {
         "partners_to_involve_in_simulation": [
-            "C0F515F0A2D0A5D9F854008BA76EB537"#,
-            # "04A66CE7327C6E21493DA6F3B9AACC75",
-            # "C306F0AD20C9B20C69271CC79B2E0887"
+            "C0F515F0A2D0A5D9F854008BA76EB537",
+            "04A66CE7327C6E21493DA6F3B9AACC75",
+            "C306F0AD20C9B20C69271CC79B2E0887"
         ],
         "number_of_simulation_steps": 40,
         "NPM": 0.1,
