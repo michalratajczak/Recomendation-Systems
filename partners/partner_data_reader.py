@@ -42,6 +42,12 @@ class partner_data_reader:
         return self.get_actual_day_data()['product_id'].unique()
 
 
+    def get_actual_day_sold_product_list(self):
+        data = self.get_actual_day_data()
+        sold_products_data = data.loc[data["sale"] == 1]
+        return sold_products_data['product_id'].unique()
+
+
     def get_day_data(self, date: datetime):
         date = date.replace(hour=0, minute=0, second=0, microsecond=0)
         return self.data.loc[self.data['click_timestamp'] == date]

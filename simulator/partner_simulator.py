@@ -5,6 +5,7 @@ import simulator.simulation_results
 import optimizer.optimizer
 import typing
 import pandas
+import datetime
 
 class partner_simulator:
     config: simulator.simulation_config.simulation_config
@@ -20,6 +21,7 @@ class partner_simulator:
 
     results: typing.List[simulator.simulation_results.simulation_result_model]
     products_exclusion_history: typing.List[simulator.simulation_results.products_exclusion_history]
+    profit_history: typing.List[dict]
 
     def __init__(self, partner_id: str, config: simulator.simulation_config.simulation_config):
         self.partner_id = partner_id
@@ -33,24 +35,23 @@ class partner_simulator:
         self.products_seen_so_far = []
         self.results = []
         self.products_exclusion_history = []
+        self.profit_history = []
 
 
     def next_day(self):
         today_date = self.data_reader.get_actual_date()
         data = self.data_reader.get_actual_day_data()
-        if len(data.index) == 0:
-            self.data_reader.next_day()
-            return
 
         all_todays_products = self.data_reader.get_actual_day_product_list()
+        if len(all_todays_products) > 0:
+            self.products_to_exclude = self.optimizer.get_excluded_products()
+            self.products_seen_so_far = self.optimizer.get_product_seen_so_far_list()
+        self.actually_excluded_products = self.__get_actually_excluded_products(all_todays_products)
         products_seen_today = self.__get_products_seen_today(all_todays_products)
-        self.products_to_exclude = self.optimizer.get_excluded_products()
-        self.products_seen_so_far = self.optimizer.get_product_seen_so_far_list()
-        self.actually_excluded_products = self.__get_actually_excluded_products(products_seen_today)
 
         result = simulator.simulation_results.simulation_result_model()
         result.clicks_savings = self.__calculate_click_savings(data, self.actually_excluded_products)
-        result.profit_gain = self.__calculate_profit_gain(data, self.actually_excluded_products)
+        result.profit_gain = self.__calculate_profit_gain_with_log(data, self.actually_excluded_products, today_date)
         result.profit_losses = self.__calculate_profit_losses(data, self.actually_excluded_products)
         result.sale_losses = self.__calculate_sale_losses(data, self.actually_excluded_products)
 
@@ -71,18 +72,18 @@ class partner_simulator:
         return partner_results
 
 
-    def __get_actually_excluded_products(self, products_seen_today: typing.List[str]):
+    def __get_actually_excluded_products(self, all_todays_products: typing.List[str]):
         actually_excluded_products = []
         for product in self.products_to_exclude:
-            if product  in products_seen_today:
+            if product in all_todays_products:
                 actually_excluded_products.append(product)
         return actually_excluded_products
 
 
-    def __get_products_seen_today(self, products: typing.List[str]):
+    def __get_products_seen_today(self, all_todays_products: typing.List[str]):
         products_seen_today = []
-        for product in products:
-            if product not in self.products_to_exclude:
+        for product in all_todays_products:
+            if product not in self.actually_excluded_products:
                 products_seen_today.append(product)
         products_seen_today.sort()
         return products_seen_today
@@ -92,14 +93,49 @@ class partner_simulator:
         total_profit_gain = 0
         for product in products_excluded:
             excluded_product_data = data.loc[data['product_id'] == product]
-            excluded_product_total_sales_value = excluded_product_data["sales_amount_in_euro"].sum()
+            excluded_product_sale_data = excluded_product_data.loc[excluded_product_data["sale"] == 1]
+            excluded_product_total_sales_value = excluded_product_sale_data["sales_amount_in_euro"].sum()
             excluded_product_number_of_clicks = len(excluded_product_data.index)
 
             profit_gain = excluded_product_number_of_clicks * self.average_click_cost \
                           - excluded_product_total_sales_value * (self.config.npm + self.config.click_cost_ratio)
 
             total_profit_gain += profit_gain
+        print(f"total: {total_profit_gain}")
+        return total_profit_gain
 
+
+    def __calculate_profit_gain_with_log(self, data: pandas.DataFrame, products_excluded: typing.List[str], date: datetime):
+        total_profit_gain = 0
+        total_number_of_excluded_products_clicks = 0
+        total_number_of_sold_products = 0
+        total_sales_amount_in_euro = 0
+        profit_log = dict()
+        profit_log['date'] = date.strftime("%d/%m/%Y")
+        for product in products_excluded:
+            excluded_product_data = data.loc[data['product_id'] == product]
+            excluded_product_sale_data = excluded_product_data.loc[excluded_product_data["sale"] == 1]
+            excluded_product_total_sales_value = excluded_product_sale_data["sales_amount_in_euro"].sum()
+            excluded_product_number_of_clicks = len(excluded_product_data.index)
+
+            profit_gain = excluded_product_number_of_clicks * self.average_click_cost \
+                          - excluded_product_total_sales_value * (self.config.npm + self.config.click_cost_ratio)
+            total_profit_gain += profit_gain
+            total_number_of_excluded_products_clicks += excluded_product_number_of_clicks
+            total_number_of_sold_products += len(excluded_product_sale_data.index)
+            total_sales_amount_in_euro += excluded_product_total_sales_value
+            profit_log[product] = \
+                {
+                    'number_of_clicks': excluded_product_number_of_clicks,
+                    'number_of_sold_products': len(excluded_product_sale_data.index),
+                    'sales_amount_in_euro': excluded_product_total_sales_value,
+                    'profit_gain': profit_gain
+                }
+        profit_log['total_profit_gain'] = total_profit_gain
+        profit_log['total_number_of_excluded_products_clicks'] = total_number_of_excluded_products_clicks
+        profit_log['total_number_of_sold_excluded_products'] = total_number_of_sold_products
+        profit_log['total_excluded_products_sales_amount_in_euro'] = total_sales_amount_in_euro
+        self.profit_history.append(profit_log)
         return total_profit_gain
 
 
@@ -120,7 +156,8 @@ class partner_simulator:
         total_sale_losses = 0
         for product in products_excluded:
             excluded_product_data = data.loc[data['product_id'] == product]
-            excluded_product_total_sales_value = excluded_product_data["sales_amount_in_euro"].sum()
+            excluded_product_sale_data = excluded_product_data.loc[excluded_product_data["sale"] == 1]
+            excluded_product_total_sales_value = excluded_product_sale_data["sales_amount_in_euro"].sum()
 
             sale_losses = excluded_product_total_sales_value
 
@@ -133,9 +170,10 @@ class partner_simulator:
         total_profit_losses = 0
         for product in products_excluded:
             excluded_product_data = data.loc[data['product_id'] == product]
-            excluded_product_total_sales_value = excluded_product_data["sales_amount_in_euro"].sum()
+            excluded_product_sale_data = excluded_product_data.loc[excluded_product_data["sale"] == 1]
+            excluded_product_total_sales_value = excluded_product_sale_data["sales_amount_in_euro"].sum()
 
-            profit_losses = excluded_product_total_sales_value * self.config.npm * (1 - self.config.click_cost_ratio)
+            profit_losses = excluded_product_total_sales_value * self.config.npm
 
             total_profit_losses += profit_losses
 
