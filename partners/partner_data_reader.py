@@ -34,6 +34,19 @@ class partner_data_reader:
         return self.data.loc[(self.data['click_timestamp'] == self.__actual_day_date)]
 
 
+    def get_actual_day_product_sales_info(self):
+        products = self.get_actual_day_product_list()
+        products_info = dict()
+        for product in products:
+            products_info[product] = dict()
+            data = self.get_day_product_data(self.__actual_day_date, product)
+            sold_products = data.loc[data['sale'] == 1]
+            products_info[product]['total_number_of_clicks'] = len(data.index)
+            products_info[product]['total_sales_amount_in_euro'] = sold_products['sales_amount_in_euro'].sum()
+
+        return products_info
+
+
     def next_day(self):
         self.__actual_day_date += datetime.timedelta(days=1)
 

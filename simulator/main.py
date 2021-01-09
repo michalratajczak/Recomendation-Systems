@@ -10,9 +10,11 @@ configuration = \
         ],
         "number_of_simulation_steps": 40,
         "NPM": 0.1,
+        "click_cost_ratio": 0.12,
+        "exclusion_strategy": "history-based", #options: pseudorandom | history-based
         "how_many_ratio": 20,
         "pseudorandom_seed": 12,
-        "click_cost_ratio": 0.12
+        "profit_threshold": 4
     }
 
 

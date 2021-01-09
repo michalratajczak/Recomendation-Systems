@@ -30,7 +30,7 @@ class partner_simulator:
         self.partner_profile = partners.partners_profiles.profiles[partner_id]
         self.average_click_cost = (self.config.click_cost_ratio * self.partner_profile["total_sales_value"])\
                                   / self.partner_profile["total_number_of_clicks"]
-        self.optimizer = optimizer.optimizer.optimizer(config)
+        self.optimizer = optimizer.optimizer.optimizer(config, self.average_click_cost)
         self.products_to_exclude = []
         self.products_seen_so_far = []
         self.results = []
@@ -62,7 +62,7 @@ class partner_simulator:
                                                                           self.products_to_exclude,
                                                                           self.actually_excluded_products)
         self.products_exclusion_history.append(history)
-        self.optimizer.update_product_list(all_todays_products)
+        self.optimizer.update_product_list(self.__get_products_seen_today_sales_info(products_seen_today))
         self.data_reader.next_day()
 
 
@@ -178,3 +178,13 @@ class partner_simulator:
             total_profit_losses += profit_losses
 
         return total_profit_losses
+
+
+    def __get_products_seen_today_sales_info(self, products_seen_today):
+        sales_info = self.data_reader.get_actual_day_product_sales_info().copy()
+        sales_info_products = list(sales_info.keys())
+        for info in sales_info_products:
+            if info not in products_seen_today:
+                del sales_info[info]
+
+        return sales_info
