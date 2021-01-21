@@ -279,7 +279,6 @@ def notation_A_full_report(history: typing.List[products_exclusion_history]):
 
 def notation_B_short_report(history: typing.List[products_exclusion_history]):
     report = dict()
-    report['strategy'] = "random"
     report['days'] = []
     for day in history:
         r = dict()
@@ -292,7 +291,6 @@ def notation_B_short_report(history: typing.List[products_exclusion_history]):
 
 def notation_B_medium_report(history: typing.List[products_exclusion_history]):
     report = dict()
-    report['strategy'] = "random"
     report['days'] = []
     for day in history:
         r = dict()
@@ -306,7 +304,6 @@ def notation_B_medium_report(history: typing.List[products_exclusion_history]):
 
 def notation_B_full_report(history: typing.List[products_exclusion_history]):
     report = dict()
-    report['strategy'] = "random"
     report['days'] = []
     for day in history:
         r = dict()
